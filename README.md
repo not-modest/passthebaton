@@ -52,7 +52,7 @@ All progress is on disk: `handover/.passthebaton/state.json` and per-step artifa
 - A model grades a model. Keys are built from evidence and spot-checked, but a wrong key is possible; the report flags suspect questions.
 - Isolation of test agents is by instruction plus a scratch copy, not an OS sandbox. For untrusted projects run in a container or throwaway user.
 - The secret scanner is pattern-based and does not read `.git`.
-- Cost: a full run is many agent calls (an author, up to 3 Haiku rounds with examiner, hard exam with Opus twice, a final round). It is meant for projects worth handing over.
+- Cost: a full run is many agent calls (digest agents for a long conversation, a question author, up to 3 Haiku rounds with an examiner, a hard exam with Opus twice, a final round), so it can cost a few million subagent tokens depending on the project and how long its conversation is. Example: one run on a project of about 12 MB (roughly 500 source files) with a 1.1 MB conversation transcript took about 2 million subagent tokens and about 35 minutes. It is meant for projects worth handing over.
 
 ## What you get
 
