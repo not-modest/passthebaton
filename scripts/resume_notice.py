@@ -13,5 +13,5 @@ except (OSError, ValueError):
     raise SystemExit(0)
 if st.get("status") != "done":
     print(f"[passthebaton] An unfinished handover run exists for this folder (status: {st.get('status')}, "
-          f"last update {st.get('updated')}). Tell the user, and if they want to continue, run /passthebaton resume. "
+          f"last update {st.get('updated')}). Tell the user, and if they want to continue, run /passthebaton:passthebaton resume. "
           f"State: {p}")

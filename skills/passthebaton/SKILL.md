@@ -83,7 +83,7 @@ State is on disk, never in `/tmp` and never only in your head. `handover/.passth
 
 - Mark a step `running` before work and `done` after. A step interrupted halfway is simply redone; steps are idempotent (outputs overwritten).
 - If an `Agent` call fails with a usage-limit, rate-limit or overload error: do **not** retry in a loop. Run `pb_state.py step --root <root> <step> interrupted --note "<error text>"`, tell the user in one or two sentences that the run is paused and saved, and stop. Do not fake a result.
-- When the user (or the app, which sends a "limit reset, continue" message) resumes: run `pb_state.py show` and `pb_state.py next`, tell the user in one line where you are, and carry on from that step. The `/passthebaton resume` argument does the same.
+- When the user (or the app, which sends a "limit reset, continue" message) resumes: run `pb_state.py show` and `pb_state.py next`, tell the user in one line where you are, and carry on from that step. The `/passthebaton:passthebaton resume` argument does the same.
 - A SessionStart hook in this plugin reminds a fresh session when an unfinished run exists in the folder.
 - Commit-friendly: all of it is plain files under `handover/`.
 - You cannot reliably schedule your own wake-up across sessions; do not claim you will. The resume mechanism is "run it again, it picks up".

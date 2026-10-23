@@ -18,10 +18,10 @@ Long projects accumulate context that lives nowhere a new session can see it: de
 Open Claude Code **in the project folder** and run:
 
 ```
-/passthebaton
+/passthebaton:passthebaton
 ```
 
-Plugin skills are normally namespaced by the plugin name, so if the bare form is not offered use `/passthebaton:passthebaton`. Other forms: `/passthebaton resume` (continue an unfinished run), `/passthebaton status`, `/passthebaton --run-commands` (let test successors run read-only commands; default is read-only file access).
+(Claude Code namespaces plugin skills by plugin name. Typing `/passthebaton` and picking the entry from the autocomplete list gives the same thing.) Other forms: `/passthebaton:passthebaton resume` (continue an unfinished run), `/passthebaton:passthebaton status`, `/passthebaton:passthebaton --run-commands` (let test successors run read-only commands; default is read-only file access).
 
 It asks a handful of questions up front (scope, whether successors may run commands, whether to keep git history in test copies, whether to append a pointer to `CLAUDE.md`) and then runs unattended.
 
