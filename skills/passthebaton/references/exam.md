@@ -45,7 +45,7 @@ You are taking over a project. You have no memory of earlier work. Everything yo
 
 Rules:
 - Work ONLY inside <SCRATCH_DIR>. Do not read any path outside it.
-- Do not install anything, use the network, or modify/create/delete any file. {{COMMANDS}}
+- Do not install anything, use the network, or modify/create/delete any file, except writing your answer file at the path given below. {{COMMANDS}}
 - If something looks like a credential, do not repeat it; say "credential-like value at <path>".
 - Answer from the handover docs first; open code or other files to confirm or to fill gaps. For every answer, say where you found it: "handover" (the handover docs were enough), "project" (you had to dig through the project), or "guess" (you could not find it).
 - If the files do not record the answer, say exactly that ("not documented") and say what you found instead. Do not invent.
@@ -54,12 +54,12 @@ Rules:
 Exam:
 <the 10 questions, numbered>
 
-Return ONLY a JSON object: {"orientation_notes":"what was unclear or missing in the handover when you began, in your own words (or 'none')","answers":[{"id":1,"answer":"...","found_in":"handover|project|guess","files_consulted":["..."],"confidence":"high|medium|low","doc_gap":"what in the handover would have made this faster or surer (or 'none')"},...]}
+Write your answer as a JSON file to <ANSWERS_PATH> (the one and only file you may create; it is outside your working directory on purpose) and then reply with just "written". The JSON shape: {"orientation_notes":"what was unclear or missing in the handover when you began, in your own words (or 'none')","answers":[{"id":1,"answer":"...","found_in":"handover|project|guess","files_consulted":["..."],"confidence":"high|medium|low","doc_gap":"what in the handover would have made this faster or surer (or 'none')"},...]}
 ```
 
 `{{COMMANDS}}`: `Do not run any commands that execute project code; you may list and read files only.` or, if the user allowed it, `You may run read-only commands (tests, linters, --help, git log/status/diff) if they help; never commands that write, install or touch the network.`
 
-Save the returned JSON to `RUN/rounds/<name>/answers.json` and the questions to `RUN/rounds/<name>/questions.json` (`<name>` = `haiku1`, `haiku2`, `haiku3`, `final`). If the JSON is unparseable, save the raw text as `answers.raw.txt` and re-ask once.
+`<ANSWERS_PATH>` is `~/.passthebaton/scratch/<run>/answers_<name>.json`, next to (not inside) the successor's copy and nowhere near the answer key. After the agent finishes, validate it parses and has 10 answers, then `cp` it to `RUN/rounds/<name>/answers.json` and save the questions to `RUN/rounds/<name>/questions.json` (`<name>` = `haiku1`, `haiku2`, `haiku3`, `final`). This avoids re-typing the answers yourself, which is slow and error-prone. If the JSON is unparseable, re-ask once. The 'only file you may create' rule is the single exception to the read-only rule, and the `Work ONLY inside` rule is amended to say so.
 
 ## Grading
 
@@ -123,3 +123,9 @@ Rationale: rounds 1-3 reuse questions so improvement is measurable; the final ro
 ## When an exam cannot run
 
 If an agent call is refused or limited, follow "Never lose progress" in SKILL.md. If the project is too small for 10 meaningful questions, tell the user and ask whether to continue with fewer; do not pad with trivia.
+
+## File placement rules (learned in testing)
+
+- Never let an author write its key into the scratch base directory: successors' copies sit beside it. Tell authors to write to `RUN/answer_key/<name>_raw.json` (the hidden folder, inside the project, which no scratch copy contains).
+- Pass successors their questions as a file outside their copy (`~/.passthebaton/scratch/<run>/<name>_questions.json`, questions only, no key) and have them write answers to `answers_<name>.json` beside it; this avoids you re-typing 10 questions and 10 answers per round.
+- After each successor finishes, check its `files_consulted` for any path outside its copy and note it in the round summary.
