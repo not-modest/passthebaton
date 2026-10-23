@@ -1,0 +1,12 @@
+{
+  "name": "passthebaton",
+  "description": "Pass the Baton: handover documents for long-running Claude Code projects, tested by a fresh agent.",
+  "owner": { "name": "Prasham Mehta" },
+  "plugins": [
+    {
+      "name": "passthebaton",
+      "source": "./",
+      "description": "Write handover docs from a project folder and its conversation, then examine fresh Haiku/Sonnet successors on them until they pass."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "passthebaton",
+  "displayName": "Pass the Baton",
+  "version": "0.1.0",
+  "description": "Hand a long-running project over to a fresh Claude Code session or account: writes handover docs from the folder and the conversation, then proves a fresh agent can pick up from them by examining it.",
+  "author": { "name": "Prasham Mehta" },
+  "license": "MIT",
+  "keywords": ["handover", "context", "continuity", "onboarding", "session", "memory"]
+}
