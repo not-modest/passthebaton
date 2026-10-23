@@ -40,6 +40,16 @@ Extract, with a pointer to where in `conversation.md` (heading timestamp) each c
 
 Prefer the user's later statements over earlier ones when they conflict, and record the conflict.
 
+### Large conversations (over ~200 KB, which is most long projects)
+
+You cannot read 1 MB of transcript yourself and still have room to write the handover. Digest it in parallel:
+
+1. `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/split_conversation.py --root <root>` → `harvest/slices/slice_NN.md` (about 140 KB each, cut at message boundaries).
+2. Spawn one `Agent` per slice, **in parallel**, `model: sonnet`, each told to write `harvest/digests/digest_NN.md`. Prompt: "Read <slice file> (a slice of a long Claude Code conversation about the project in <root>; the project folder is read-only context). Write a digest to <digest path> with these sections, each item carrying the heading timestamp it came from: GOAL/SCOPE changes; DECISIONS (what, why, alternatives rejected, who decided); USER CORRECTIONS and standing rules (the user's own words, short); TRAPS and fixes; STATE at the end of this slice (done / in progress / blocked / promised); OPEN QUESTIONS; VOCABULARY (ids, nicknames, abbreviations). Quote the user briefly where wording matters; never copy secrets; do not invent; if something is unclear say so. Return only the path." Work only on that file; no network, no installs.
+3. Read all digests (they are short), merge them in your head with the folder, and spot-check 5 claims against the slices before relying on them. Later digests override earlier ones when they conflict; record conflicts.
+
+Do this in one batch of parallel calls. If a digest agent is cut off by a usage limit, rerun only that slice (the file is the checkpoint).
+
 ## 4. Redact
 
 `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/scan_secrets.py --redact handover/.passthebaton/harvest` before anyone else reads it.

@@ -7,11 +7,11 @@ Long projects accumulate context that lives nowhere a new session can see it: de
 ## Install
 
 ```
-/plugin marketplace add <owner>/passthebaton
+/plugin marketplace add not-modest/passthebaton
 /plugin install passthebaton@passthebaton
 ```
 
-(or `claude plugin marketplace add <owner>/passthebaton` and `claude plugin install passthebaton@passthebaton` from a shell). Needs Claude Code, Python 3 and `git`. No other dependencies, no Workflow tool.
+(or `claude plugin marketplace add not-modest/passthebaton` and `claude plugin install passthebaton@passthebaton` from a shell). Needs Claude Code, Python 3 and `git`. No other dependencies, no Workflow tool.
 
 ## Use
 

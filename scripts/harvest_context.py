@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Harvest what a handover needs, into <root>/handover/.passthebaton/harvest/.
 
-  harvest_context.py --root PROJECT [--session ID | --all-sessions] [--max-chars 1500]
+  harvest_context.py --root PROJECT [--session ID | --all-sessions] [--max-chars 1500] [--transcripts-root OLD_PATH] [--until ISO_UTC]
 
 Produces:
   inventory.md      tree (secrets/deps/build skipped), sizes, git log + status, top-level docs list
@@ -36,12 +36,14 @@ def text_of(msg):
     return "\n".join(out)
 
 
-def conversation(jsonl, cap):
+def conversation(jsonl, cap, until=None):
     lines, n_trunc, n = [], 0, 0
     for raw in open(jsonl, encoding="utf-8", errors="replace"):
         try:
             o = json.loads(raw)
         except json.JSONDecodeError:
+            continue
+        if until and o.get("timestamp", "") > until:
             continue
         if o.get("isSidechain") or o.get("type") not in ("user", "assistant"):
             continue
@@ -91,6 +93,8 @@ def main():
     ap.add_argument("--session")
     ap.add_argument("--all-sessions", action="store_true")
     ap.add_argument("--max-chars", type=int, default=1500)
+    ap.add_argument("--until", help="ISO UTC timestamp; ignore messages after it (to match a folder snapshot taken earlier)")
+    ap.add_argument("--transcripts-root", help="folder whose Claude Code transcripts to use, when the project was moved/cloned to a new path")
     a = ap.parse_args()
     root = Path(a.root).resolve()
     out = root / "handover" / ".passthebaton" / "harvest"
@@ -106,7 +110,7 @@ def main():
     (out / "inventory.md").write_text("\n".join(inv))
 
     # conversation + memory
-    proj = Path.home() / ".claude" / "projects" / enc(root)
+    proj = Path.home() / ".claude" / "projects" / enc(Path(a.transcripts_root).resolve() if a.transcripts_root else root)
     info = {"claude_project_dir": str(proj), "found": proj.exists(), "sessions_used": [], "messages": 0, "truncated": 0}
     if proj.exists():
         sessions = sorted(proj.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -116,7 +120,7 @@ def main():
             sessions = sessions[:1]
         body = []
         for s in reversed(sessions):  # oldest first
-            txt, n, nt = conversation(s, a.max_chars)
+            txt, n, nt = conversation(s, a.max_chars, a.until)
             body.append(f"\n# SESSION {s.stem} ({s.stat().st_size} bytes)\n\n{txt}")
             info["sessions_used"].append(s.stem)
             info["messages"] += n
