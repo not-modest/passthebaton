@@ -17,26 +17,21 @@ Long projects pile up context that lives nowhere a new session can see: decision
 Open Claude Code anywhere and paste:
 
 ```text
-Please install the passthebaton plugin for Claude Code from this repository:
-https://github.gatech.edu/pmehta334/passthebaton.git
+Please install the passthebaton plugin for Claude Code from this GitHub repository:
+https://github.com/not-modest/passthebaton
 
-Steps: add it as a plugin marketplace, install the plugin passthebaton@passthebaton,
-then run /reload-plugins (or tell me to restart) and confirm that the command
-/passthebaton:passthebaton is available. Do not run it yet. This GitHub host needs
-me to be signed in even for public repos: if the clone fails with an authentication
-error, stop and tell me the one-time setup (a personal access token with the repo
-scope, then `git ls-remote <url>` in a terminal), or offer to clone it into
-~/passthebaton and add that folder as a local marketplace instead.
+Steps: add it as a plugin marketplace (not-modest/passthebaton), install the plugin
+passthebaton@passthebaton, then run /reload-plugins (or tell me to restart) and confirm
+that the command /passthebaton:passthebaton is available. Do not run it yet. If anything
+fails, tell me the exact error instead of guessing.
 ```
-
-(If you can reach the copy on github.com instead, use `not-modest/passthebaton` in place of the URL.)
 
 ### Or do it yourself
 
 In Claude Code:
 
 ```text
-/plugin marketplace add https://github.gatech.edu/pmehta334/passthebaton.git
+/plugin marketplace add not-modest/passthebaton
 /plugin install passthebaton@passthebaton
 /reload-plugins
 ```
@@ -44,37 +39,25 @@ In Claude Code:
 Or from a normal terminal:
 
 ```bash
-claude plugin marketplace add https://github.gatech.edu/pmehta334/passthebaton.git
+claude plugin marketplace add not-modest/passthebaton
 claude plugin install passthebaton@passthebaton
 ```
 
-### First time on `github.gatech.edu`: let git sign in (one-time)
-
-Georgia Tech's GitHub requires you to be signed in even to read a public repository, and Claude Code installs plugins with plain `git`, so git must already know your login. Do this once in a normal terminal, before the install step:
-
-1. On `github.gatech.edu` go to your profile picture → Settings → Developer settings → Personal access tokens → generate a token with the **`repo`** scope (read access is enough) and copy it.
-2. Run:
-
-   ```bash
-   git ls-remote https://github.gatech.edu/pmehta334/passthebaton.git
-   ```
-
-   When asked, enter your GT username and paste the token as the password. On macOS the Keychain remembers it. (Alternative: `gh auth login --hostname github.gatech.edu`.)
-3. If that prints a list of refs, the install commands below will work.
-
-**Fallback that needs no Claude Code git access:** clone it yourself and add the local folder.
-
-```bash
-git clone https://github.gatech.edu/pmehta334/passthebaton.git ~/passthebaton
-claude plugin marketplace add ~/passthebaton
-claude plugin install passthebaton@passthebaton
-```
-
-**Requirements:** a Claude Code with plugin support (the `/plugin` command exists), `python3`, `git`, and read access to the repository (for the Georgia Tech copy you must be signed in to `github.gatech.edu`; for a private repository git asks for a username and a personal access token the first time). Tested on macOS; Linux should work; Windows is untested.
+**Requirements:** a Claude Code with plugin support (the `/plugin` command exists), `python3` and `git`. Tested on macOS; Linux should work; Windows is untested.
 
 **Check it worked:** type `/passthebaton` in Claude Code; `passthebaton:passthebaton` should appear in the list. Claude Code namespaces plugin commands by plugin name, so the full command is **`/passthebaton:passthebaton`**.
 
 **Update later:** `claude plugin marketplace update passthebaton`, then `claude plugin update passthebaton@passthebaton`, then restart or `/reload-plugins`.
+
+### Alternative: the Georgia Tech copy
+
+The same plugin is mirrored at `https://github.gatech.edu/pmehta334/passthebaton.git`. That host requires you to be signed in even to read a public repository, and Claude Code installs plugins with plain `git`, so git must already know your login. Once, in a normal terminal:
+
+1. On `github.gatech.edu`: profile picture → Settings → Developer settings → Personal access tokens → generate a token with the `repo` scope.
+2. Run `git ls-remote https://github.gatech.edu/pmehta334/passthebaton.git`, enter your GT username and paste the token as the password (the macOS Keychain remembers it; or use `gh auth login --hostname github.gatech.edu`).
+3. Then use the commands above with `https://github.gatech.edu/pmehta334/passthebaton.git` in place of `not-modest/passthebaton`.
+
+If git sign-in is a problem, clone it yourself and add the folder: `git clone <url> ~/passthebaton`, then `claude plugin marketplace add ~/passthebaton` and `claude plugin install passthebaton@passthebaton`.
 
 ---
 
@@ -168,7 +151,7 @@ A full run is many agent calls (digest agents for a long conversation, a questio
 | Problem | Fix |
 |---|---|
 | `/passthebaton` is not listed | Run `/reload-plugins` or restart Claude Code; check `claude plugin list` shows `passthebaton` enabled. |
-| Adding the marketplace asks for a password or fails | The repo is private or on `github.gatech.edu`: sign in there, and use your username plus a personal access token (scope `repo`) when git asks. |
+| Adding the marketplace asks for a password or fails | If you use the `github.gatech.edu` copy, git needs your sign-in first (see the Georgia Tech section). The github.com copy needs no sign-in. |
 | "python3: command not found" | Install Python 3 (it only uses the standard library). |
 | It says there is almost no history | The folder has little conversation. Pick "all sessions", choose from the session list, or give the old folder's path if the project was moved. |
 | Run interrupted by a usage limit | Wait for the reset, then `/passthebaton:passthebaton resume`. |
