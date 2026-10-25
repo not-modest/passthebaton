@@ -22,8 +22,11 @@ https://github.gatech.edu/pmehta334/passthebaton.git
 
 Steps: add it as a plugin marketplace, install the plugin passthebaton@passthebaton,
 then run /reload-plugins (or tell me to restart) and confirm that the command
-/passthebaton:passthebaton is available. Do not run it yet. If the clone asks me
-to sign in, tell me exactly what to do instead of guessing.
+/passthebaton:passthebaton is available. Do not run it yet. This GitHub host needs
+me to be signed in even for public repos: if the clone fails with an authentication
+error, stop and tell me the one-time setup (a personal access token with the repo
+scope, then `git ls-remote <url>` in a terminal), or offer to clone it into
+~/passthebaton and add that folder as a local marketplace instead.
 ```
 
 (If you can reach the copy on github.com instead, use `not-modest/passthebaton` in place of the URL.)
@@ -42,6 +45,28 @@ Or from a normal terminal:
 
 ```bash
 claude plugin marketplace add https://github.gatech.edu/pmehta334/passthebaton.git
+claude plugin install passthebaton@passthebaton
+```
+
+### First time on `github.gatech.edu`: let git sign in (one-time)
+
+Georgia Tech's GitHub requires you to be signed in even to read a public repository, and Claude Code installs plugins with plain `git`, so git must already know your login. Do this once in a normal terminal, before the install step:
+
+1. On `github.gatech.edu` go to your profile picture → Settings → Developer settings → Personal access tokens → generate a token with the **`repo`** scope (read access is enough) and copy it.
+2. Run:
+
+   ```bash
+   git ls-remote https://github.gatech.edu/pmehta334/passthebaton.git
+   ```
+
+   When asked, enter your GT username and paste the token as the password. On macOS the Keychain remembers it. (Alternative: `gh auth login --hostname github.gatech.edu`.)
+3. If that prints a list of refs, the install commands below will work.
+
+**Fallback that needs no Claude Code git access:** clone it yourself and add the local folder.
+
+```bash
+git clone https://github.gatech.edu/pmehta334/passthebaton.git ~/passthebaton
+claude plugin marketplace add ~/passthebaton
 claude plugin install passthebaton@passthebaton
 ```
 
