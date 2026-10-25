@@ -42,6 +42,7 @@ All progress is on disk: `handover/.passthebaton/state.json` and per-step artifa
 ## Safety
 
 - Test agents work in scratch copies in `~/.passthebaton/scratch/`, never the original. Secrets (`.env*`, keys, credentials, service-account files…) are never copied; git history is left out unless you ask for it.
+- **The project is never edited outside `handover/`**, and the plugin proves it: it fingerprints every file before the run and checks again at the end (`fingerprint.py`), and preflight offers a backup copy of the whole folder first (`~/.passthebaton/backups/`).
 - Read-only by default: no installs, no network, no writes. Commands only with `--run-commands`.
 - Everything written to `handover/`, logs and reports is scanned and redacted for secret-looking values.
 - Nothing is pushed or published. `CLAUDE.md` is changed only with your yes.
@@ -71,7 +72,7 @@ Consider adding `handover/.passthebaton/answer_key/` and `handover/.passthebaton
 ```
 .claude-plugin/   plugin.json, marketplace.json
 skills/passthebaton/SKILL.md + references/   the orchestration instructions
-scripts/          pb_state.py (resumable state), list_sessions.py, make_scratch.py, scan_secrets.py, harvest_context.py, build_report.py, resume_notice.py
+scripts/          pb_state.py (resumable state), list_sessions.py, make_scratch.py, backup_project.py, fingerprint.py, scan_secrets.py, harvest_context.py, build_report.py, resume_notice.py
 hooks/hooks.json  SessionStart resume reminder
 ```
 

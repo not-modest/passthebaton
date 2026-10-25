@@ -18,6 +18,10 @@ Log to `events.log` (`pb_state.py event --root <root> "<text>"`) at least: the s
 
 The answer keys are the one thing not to share casually: they are in `answer_key/`; `REPORT.md` quotes verdicts and reasons but not key answers. Suggest the user keep `handover/.passthebaton/answer_key/` and `harvest/` out of git (`.gitignore` lines) because `harvest/conversation.md` is the raw conversation. Offer to add the lines; do it only on a yes.
 
+## Prove the original is untouched
+
+Before the summary run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fingerprint.py verify --root <root>` (with `--allow CLAUDE.md` if the pointer was added). Quote its verdict ("VERIFIED: N files outside handover/ are byte-identical ..."). It writes `RUN/fingerprint_report.json`. If it fails, say so first, list the files, and point to the backup copy.
+
 ## The final summary to the user
 
 Run `build_report.py`, then tell the user, plainly and briefly:
