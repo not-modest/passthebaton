@@ -12,11 +12,16 @@ Run this in the **main session** (subagents cannot spawn subagents). Use only th
 
 `${CLAUDE_PLUGIN_ROOT}` below is this plugin's folder. Scripts are stdlib-only Python 3.
 
+## First, tell the user what is about to happen
+
+Before anything else (unless the argument is `status` or `resume`), print 4-6 plain lines: what this does (writes `handover/` from the folder and conversation, then tests it with fresh agents), that the project is never edited outside `handover/` and a backup is offered, that you will ask a few questions once and then run unattended, roughly how long and how costly it is (tens of minutes; a few million subagent tokens for a long project, much less for a small one), and that it can be resumed after a usage limit. If the argument is `help` or `--help`, print this plus the argument list below and stop.
+
 ## Arguments
 
 - none: start a new run for the current working folder (or resume if one is unfinished: ask).
 - `resume`: continue an unfinished run (see "Never lose progress").
 - `status`: run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/pb_state.py show --root <root>` and summarise. Stop.
+- `help`: print the short guide above and the argument list, then stop.
 - `--run-commands`: the user allows successors to run read-only commands (tests, linters). Default is off.
 
 `<root>` = the project folder (the current working directory unless the user says otherwise).
