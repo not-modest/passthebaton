@@ -23,7 +23,7 @@ Open Claude Code **in the project folder** and run:
 
 (Claude Code namespaces plugin skills by plugin name. Typing `/passthebaton` and picking the entry from the autocomplete list gives the same thing.) Other forms: `/passthebaton:passthebaton resume` (continue an unfinished run), `/passthebaton:passthebaton status`, `/passthebaton:passthebaton --run-commands` (let test successors run read-only commands; default is read-only file access).
 
-It asks a handful of questions up front (scope, whether successors may run commands, whether to keep git history in test copies, whether to append a pointer to `CLAUDE.md`) and then runs unattended.
+It asks a handful of questions up front (which conversation(s) to use, with a list of your sessions to pick from, whether the test agents may run commands (default no), whether to keep git history in test copies, whether to append a pointer to `CLAUDE.md`) and then runs unattended.
 
 ## What it does
 
@@ -71,7 +71,7 @@ Consider adding `handover/.passthebaton/answer_key/` and `handover/.passthebaton
 ```
 .claude-plugin/   plugin.json, marketplace.json
 skills/passthebaton/SKILL.md + references/   the orchestration instructions
-scripts/          pb_state.py (resumable state), make_scratch.py, scan_secrets.py, harvest_context.py, build_report.py, resume_notice.py
+scripts/          pb_state.py (resumable state), list_sessions.py, make_scratch.py, scan_secrets.py, harvest_context.py, build_report.py, resume_notice.py
 hooks/hooks.json  SessionStart resume reminder
 ```
 
