@@ -103,6 +103,7 @@ Write exactly 10 questions that test judgement, not recall. Every question must 
  (e) status: what is done vs merely planned vs blocked, and what is waiting on whom
 Each question must be a concrete scenario or ask that has a checkable, defensible answer and a clear wrong answer. Questions may rest on the conversation only if the decision or rule is not fully recorded in the files (that is the point: it tests whether the handover captured the conversation).
 
+Every question must be about the PROJECT and what was decided about it. Never ask about how the hand-over was written or tested (exam size, which agents ran, scratch copies, what the user chose in this tool's own preflight): that is not in the project and not meant to be in the docs.
 Key per question: id, question, answer (complete), must_include (facts and reasoning needed), evidence (file:line, or CONVERSATION.md heading/timestamp), common_wrong_answers, severity_if_wrong ("low|medium|high": what a successor who gets it wrong would break), whether the evidence is in the project, the conversation, or both.
 
 Return ONLY JSON: {"questions":[{"id":1,"question":"..."}...],"key":[...]}
@@ -129,3 +130,7 @@ If an agent call is refused or limited, follow "Never lose progress" in SKILL.md
 - Never let an author write its key into the scratch base directory: successors' copies sit beside it. Tell authors to write to `RUN/answer_key/<name>_raw.json` (the hidden folder, inside the project, which no scratch copy contains).
 - Pass successors their questions as a file outside their copy (`~/.passthebaton/scratch/<run>/<name>_questions.json`, questions only, no key) and have them write answers to `answers_<name>.json` beside it; this avoids you re-typing 10 questions and 10 answers per round.
 - After each successor finishes, check its `files_consulted` for any path outside its copy and note it in the round summary.
+
+## Very small projects (learned in testing)
+
+With one or two files an author can honestly write only a few questions, and they will mostly be "the files do not record this" questions, which tests whether the successor avoids inventing, not whether the docs transfer knowledge. Say so in the report ("weak test: project too small"). Do not add handover-run decisions to the docs to make questions answerable (see handover-spec.md).

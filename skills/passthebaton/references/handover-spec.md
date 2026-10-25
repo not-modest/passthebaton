@@ -22,6 +22,10 @@ If the project already has good docs (README, ledger, plan), do not duplicate th
 
 Drop a file only if it would be empty for this project, and say so in `README.md`. Add files if the project needs them (for example `11_DATA_AND_SOURCES.md`).
 
+## Keep the hand-over about the project, not about this run
+
+The docs describe the **project**. Do not record decisions about how the hand-over itself was produced or tested (exam sizes, which agents ran, what was reduced or skipped, scratch copies). That belongs in `handover/.passthebaton/` (events.log, rounds/, REPORT.md). The only allowed mention is one line in `02_STATE_AND_NEXT_STEPS.md`: "A handover test run is logged in `handover/.passthebaton/REPORT.md`". If a fix step feels the need to add a "decision" about the test run to `03_DECISIONS.md` or `08_WORKING_AGREEMENTS.md`, that is a sign the exam question was about the process, not the project: fix or drop the question instead.
+
 ## Evidence discipline
 
 Tag every non-obvious claim:
