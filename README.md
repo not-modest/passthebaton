@@ -1,79 +1,170 @@
 # passthebaton
 
-Hand a long-running Claude Code project to a fresh session, a new account or a colleague, and **check that it worked**.
+**Hand a long-running Claude Code project to a fresh session, a new account or a colleague, and check that the hand-over actually works.**
 
-Long projects accumulate context that lives nowhere a new session can see it: decisions made in conversation, the reason a file must not be touched, what is half-done, what the owner said never to do again. `passthebaton` reads the folder **and the conversation**, writes a handover set into `handover/`, then tests it: fresh agents with no memory try to pick the project up, a separate examiner grades them against a hidden answer key, and the docs are fixed until they pass. Everything is logged.
+Long projects pile up context that lives nowhere a new session can see: decisions made in conversation, why a file must not be touched, what is half-done, what the owner said never to do again. `passthebaton` reads your project folder **and** the conversation, writes a hand-over set into `handover/`, and then *tests it*: fresh agents with no memory try to pick the project up and answer questions, a separate examiner grades them against a hidden answer key, and the docs are fixed until they pass. Everything is logged so you can see what happened.
 
-## Install
+- **Your project is never edited** outside the new `handover/` folder, and the plugin proves it at the end (see [Safety](#safety)).
+- **One command**, a few questions up front, then it runs on its own and survives usage limits.
+- Needs only Claude Code, `python3` and `git`. No other installs, no API keys.
 
+---
+
+## 1. Install (two minutes)
+
+### Easiest: paste this to Claude Code
+
+Open Claude Code anywhere and paste:
+
+```text
+Please install the passthebaton plugin for Claude Code from this repository:
+https://github.gatech.edu/pmehta334/passthebaton.git
+
+Steps: add it as a plugin marketplace, install the plugin passthebaton@passthebaton,
+then run /reload-plugins (or tell me to restart) and confirm that the command
+/passthebaton:passthebaton is available. Do not run it yet. If the clone asks me
+to sign in, tell me exactly what to do instead of guessing.
 ```
-/plugin marketplace add not-modest/passthebaton
+
+(If you can reach the copy on github.com instead, use `not-modest/passthebaton` in place of the URL.)
+
+### Or do it yourself
+
+In Claude Code:
+
+```text
+/plugin marketplace add https://github.gatech.edu/pmehta334/passthebaton.git
 /plugin install passthebaton@passthebaton
+/reload-plugins
 ```
 
-(or `claude plugin marketplace add not-modest/passthebaton` and `claude plugin install passthebaton@passthebaton` from a shell). Needs Claude Code, Python 3 and `git`. No other dependencies, no Workflow tool.
+Or from a normal terminal:
 
-## Use
-
-Open Claude Code **in the project folder** and run:
-
-```
-/passthebaton:passthebaton
+```bash
+claude plugin marketplace add https://github.gatech.edu/pmehta334/passthebaton.git
+claude plugin install passthebaton@passthebaton
 ```
 
-(Claude Code namespaces plugin skills by plugin name. Typing `/passthebaton` and picking the entry from the autocomplete list gives the same thing.) Other forms: `/passthebaton:passthebaton resume` (continue an unfinished run), `/passthebaton:passthebaton status`, `/passthebaton:passthebaton --run-commands` (let test successors run read-only commands; default is read-only file access).
+**Requirements:** a Claude Code with plugin support (the `/plugin` command exists), `python3`, `git`, and read access to the repository (for the Georgia Tech copy you must be signed in to `github.gatech.edu`; for a private repository git asks for a username and a personal access token the first time). Tested on macOS; Linux should work; Windows is untested.
 
-It asks a handful of questions up front (which conversation(s) to use, with a list of your sessions to pick from, whether the test agents may run commands (default no), whether to keep git history in test copies, whether to append a pointer to `CLAUDE.md`) and then runs unattended.
+**Check it worked:** type `/passthebaton` in Claude Code; `passthebaton:passthebaton` should appear in the list. Claude Code namespaces plugin commands by plugin name, so the full command is **`/passthebaton:passthebaton`**.
 
-## What it does
+**Update later:** `claude plugin marketplace update passthebaton`, then `claude plugin update passthebaton@passthebaton`, then restart or `/reload-plugins`.
 
-1. **Preflight**: consent; builds disposable scratch copies of the project *outside* the project folder, skipping secrets.
-2. **Harvest**: inventories the folder and extracts the conversation (user and assistant text from the Claude Code transcript for that folder, plus memory notes), redacted for secrets.
-3. **Handover**: writes `handover/README.md` plus context, state and next steps, decisions, gotchas, file map, how to run, glossary, working agreements, history digest, and an honest list of unknowns, every claim tagged verified / from the conversation / inferred.
-4. **Standard exam (up to 3 rounds)**: an independent Sonnet agent reads the *project only* (not the handover) and writes 10 questions and a hidden answer key with evidence. A fresh **Haiku** successor reads the handover and answers; a **Sonnet** examiner grades. **Pass = 10/10 fully correct.** After a failure the docs are fixed (generally, never by pasting the question) and the round reruns. If round 3 still fails, it is reported and the run continues.
-5. **Hard exam**: an **Opus** author writes 10 nuance questions from the project *and* the conversation (traps, rejected alternatives, standing rules, conflicting sources, done vs planned). A **Sonnet** successor takes it, an **Opus** critic grades it, and the docs are updated.
-6. **Final round**: one more Haiku round on a **fresh** set of 10 questions, so a pass cannot be explained by docs tuned to earlier questions.
-7. **Report**: `handover/.passthebaton/REPORT.md` with scores, failures, doc diffs per round, and where everything is.
+---
 
-## Surviving usage limits
+## 2. Use it
 
-All progress is on disk: `handover/.passthebaton/state.json` and per-step artifacts; steps are idempotent and the plan is recomputed from them. If a usage limit hits mid-run the orchestrator marks the step interrupted, says so and stops. When limits reset (the desktop app sends a "continue" message, or you run `/passthebaton resume`) it picks up at the interrupted step. A SessionStart hook reminds a fresh session in the same folder that an unfinished run exists. It does **not** wake itself up across sessions.
+1. Open Claude Code **in the project folder** you want to hand over.
+2. Run:
+
+   ```text
+   /passthebaton:passthebaton
+   ```
+
+   Other forms: `... help` (short guide), `... status` (where is the run?), `... resume` (continue an interrupted run), `... --run-commands` (see the commands question below).
+
+3. Answer the questions it asks once, up front. The recommended option is marked each time, and you can accept the recommendations everywhere.
+
+   | Question | What it means |
+   |---|---|
+   | **Which conversation?** | Just this session, all sessions of this folder (best for a long project), sessions you pick from a list, or none. |
+   | **Let the test agents run commands?** | Default **no**: they only read files. "Yes" lets them run tests and other commands, which executes your project's code on your machine. |
+   | **Make a backup copy first?** | Recommended. Copies the folder to `~/.passthebaton/backups/` before anything else. |
+   | **Add a pointer to `CLAUDE.md`?** | Default no. If yes, a short block telling future sessions to read `handover/README.md`. |
+   | **Keep git history in test copies?** | Default no (old commits may hold secrets). |
+
+4. Leave it running. It tells you each stage as it goes. A real run takes tens of minutes and a few million subagent tokens (see [Cost](#cost)); you can walk away.
+5. At the end you get a score table and a short verdict.
+
+### What it does, in order
+
+1. **Preflight**: your answers, the backup, a fingerprint of every file (so it can prove nothing changed), scratch copies outside your project.
+2. **Harvest**: inventory of the folder and an extract of the conversation, secrets redacted. For a long conversation it digests the transcript in parallel first.
+3. **Write the hand-over** into `handover/`: a README, project context, state and next steps, decisions with reasons, gotchas, file map, how to run, glossary, the owner's working rules, a history digest, and an honest list of unknowns. Every claim is tagged *verified*, *from the conversation* or *inferred*.
+4. **Standard exam, up to 3 rounds.** An independent agent that reads only your project (never the hand-over) writes 10 questions and a hidden answer key. A fresh **Haiku** agent with no memory answers from the hand-over; a **Sonnet** examiner grades. **Pass = 10/10.** After a miss the docs are fixed (in general terms, never by pasting the question) and the round reruns. If round 3 still fails it says so and carries on.
+5. **Hard exam.** An **Opus** agent writes 10 questions on judgement and on decisions that only the conversation contains; a **Sonnet** successor takes it; an **Opus** critic grades it; the docs are fixed again.
+6. **Final round.** One more Haiku round on 10 **new** questions, so a pass cannot come from docs tuned to earlier questions.
+7. **Report** and the "your project is untouched" check.
+
+Very small projects: if there is not enough material for 10 real questions it asks whether to run reduced exams or skip them instead of padding with trivia.
+
+---
+
+## 3. After the run: using the hand-over
+
+Everything is in your project folder:
+
+```text
+handover/
+  README.md                      <- start here
+  01_PROJECT_CONTEXT.md  02_STATE_AND_NEXT_STEPS.md  03_DECISIONS.md  04_GOTCHAS_AND_TRAPS.md
+  05_FILE_MAP.md  06_HOW_TO_RUN.md  07_GLOSSARY.md  08_WORKING_AGREEMENTS.md
+  09_HISTORY_DIGEST.md  10_UNKNOWNS_AND_UNVERIFIED.md
+  .passthebaton/                 <- the test: REPORT.md, per-round files, diffs, logs
+```
+
+**Please read `handover/README.md` and `10_UNKNOWNS_AND_UNVERIFIED.md` and correct anything wrong or missing.** The tests cannot know what you never wrote down anywhere.
+
+**To hand the project to a new session or account**, copy the project folder (including `handover/`) to the other machine or account, open Claude Code in it, and paste:
+
+```text
+You are taking over this project from a previous session. Read handover/README.md first,
+then handover/02_STATE_AND_NEXT_STEPS.md and handover/08_WORKING_AGREEMENTS.md, and follow
+the reading order there. Do not change anything yet. Tell me what the project is, what state
+it is in, what is waiting on me, and what you would do first.
+```
+
+If you agreed to the `CLAUDE.md` pointer, new sessions in that folder are told to do this automatically.
+
+Tip: add `handover/.passthebaton/answer_key/` and `handover/.passthebaton/harvest/` to `.gitignore`. The second holds your raw conversation.
+
+---
 
 ## Safety
 
-- Test agents work in scratch copies in `~/.passthebaton/scratch/`, never the original. Secrets (`.env*`, keys, credentials, service-account files…) are never copied; git history is left out unless you ask for it.
-- **The project is never edited outside `handover/`**, and the plugin proves it: it fingerprints every file before the run and checks again at the end (`fingerprint.py`), and preflight offers a backup copy of the whole folder first (`~/.passthebaton/backups/`).
-- Read-only by default: no installs, no network, no writes. Commands only with `--run-commands`.
-- Everything written to `handover/`, logs and reports is scanned and redacted for secret-looking values.
-- Nothing is pushed or published. `CLAUDE.md` is changed only with your yes.
+- **Your project is never edited outside `handover/`** (plus `CLAUDE.md` only if you said yes). The plugin records a fingerprint of every file at the start and checks again at the end: you get either "VERIFIED: N files outside handover/ are byte-identical" or a list of exactly what differs. This is evidence after the fact, not a lock; the optional backup is your way back.
+- Test agents work in **scratch copies** in `~/.passthebaton/scratch/`, never in your folder. Secret-looking files (`.env*`, keys, credentials, service-account files…) are never copied; git history is left out unless you ask.
+- **Read-only by default**: no installs, no network, no file changes by the test agents, except the single answer file each is told to write. Commands only if you opt in.
+- Everything written to `handover/`, logs and the report is scanned and redacted for secret-looking values. The scanner is pattern-based and will miss unusual secrets, and it does not read `.git`.
+- Nothing is pushed, published or sent anywhere.
+- Isolation of test agents is by instruction plus a scratch copy, not an operating-system sandbox. For an untrusted project, run it in a container or a throwaway user account.
+
+## Usage limits and interruptions
+
+All progress is saved to disk (`handover/.passthebaton/state.json` plus a file per step), and each step can be safely redone. If a usage limit stops the run, the plugin says so and stops. When the limit resets, say "continue" or run `/passthebaton:passthebaton resume` and it picks up at the interrupted step. A session-start hook also reminds a fresh session in the same folder that a run is unfinished. It does **not** wake itself up across sessions; you (or the desktop app's "limit has reset" message) restart it.
+
+## Cost
+
+A full run is many agent calls (digest agents for a long conversation, a question author, up to 3 Haiku rounds with an examiner, a hard exam with Opus twice, a final round), so it can cost **a few million subagent tokens** depending on the project and the length of its conversation. Example: one run on a project with about 12 MB of source (roughly 500 files, excluding git history, dependencies and build output) and a 1.1 MB conversation transcript took about 2 million subagent tokens and about 35 minutes. Tiny projects are far cheaper. It is meant for projects worth handing over.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `/passthebaton` is not listed | Run `/reload-plugins` or restart Claude Code; check `claude plugin list` shows `passthebaton` enabled. |
+| Adding the marketplace asks for a password or fails | The repo is private or on `github.gatech.edu`: sign in there, and use your username plus a personal access token (scope `repo`) when git asks. |
+| "python3: command not found" | Install Python 3 (it only uses the standard library). |
+| It says there is almost no history | The folder has little conversation. Pick "all sessions", choose from the session list, or give the old folder's path if the project was moved. |
+| Run interrupted by a usage limit | Wait for the reset, then `/passthebaton:passthebaton resume`. |
+| It warns files outside `handover/` changed | Stop, look at the listed files, restore from the backup in `~/.passthebaton/backups/`, and open an issue. |
+| Project too small for 10 questions | Choose reduced exams or skip; the docs are still written. |
 
 ## Honest limits
 
-- Passing shows a fresh agent **on the same account, machine and tooling** can answer from the docs. It does not prove another account behaves identically, and it cannot recover knowledge that was never written anywhere (the report lists what the writer could not confirm).
-- A model grades a model. Keys are built from evidence and spot-checked, but a wrong key is possible; the report flags suspect questions.
-- Isolation of test agents is by instruction plus a scratch copy, not an OS sandbox. For untrusted projects run in a container or throwaway user.
-- The secret scanner is pattern-based and does not read `.git`.
-- Cost: a full run is many agent calls (digest agents for a long conversation, a question author, up to 3 Haiku rounds with an examiner, a hard exam with Opus twice, a final round), so it can cost a few million subagent tokens depending on the project and how long its conversation is. Example: one run on a project with about 12 MB of source (roughly 500 files, excluding git history, dependencies and build output) and a 1.1 MB conversation transcript took about 2 million subagent tokens and about 35 minutes. It is meant for projects worth handing over.
-
-## What you get
-
-```
-handover/
-  README.md  01_PROJECT_CONTEXT.md  02_STATE_AND_NEXT_STEPS.md  03_DECISIONS.md  04_GOTCHAS_AND_TRAPS.md
-  05_FILE_MAP.md  06_HOW_TO_RUN.md  07_GLOSSARY.md  08_WORKING_AGREEMENTS.md  09_HISTORY_DIGEST.md
-  10_UNKNOWNS_AND_UNVERIFIED.md
-  .passthebaton/   state, events.log, REPORT.md, harvest/, exam/, answer_key/, rounds/, diffs/
-```
-
-Consider adding `handover/.passthebaton/answer_key/` and `handover/.passthebaton/harvest/` to `.gitignore`: the latter is your raw conversation.
+- A pass shows that a fresh agent **on the same account, machine and tooling** could answer from the docs. It does not prove that another account behaves identically, and it cannot recover knowledge that was never written anywhere.
+- A model grades a model. Answer keys are built from evidence and spot-checked, but a key can be wrong; the report flags suspect questions. A 10/10 on questions the docs do not cover means the successor dug through the project, which the report shows (`found in: project`).
+- Question quality limits what the test proves. Small projects give weak tests.
 
 ## Layout
 
-```
+```text
 .claude-plugin/   plugin.json, marketplace.json
 skills/passthebaton/SKILL.md + references/   the orchestration instructions
-scripts/          pb_state.py (resumable state), list_sessions.py, make_scratch.py, backup_project.py, fingerprint.py, scan_secrets.py, harvest_context.py, build_report.py, resume_notice.py
-hooks/hooks.json  SessionStart resume reminder
+scripts/          pb_state.py (resumable state), list_sessions.py, make_scratch.py, backup_project.py,
+                  fingerprint.py, scan_secrets.py, harvest_context.py, split_conversation.py,
+                  build_report.py, resume_notice.py
+hooks/hooks.json  session-start reminder when a run is unfinished
 ```
 
-MIT licensed.
+MIT licensed. Issues and ideas welcome.
